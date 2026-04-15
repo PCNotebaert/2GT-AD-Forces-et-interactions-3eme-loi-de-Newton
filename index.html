@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Activité documentaire — Modéliser une action sur un système</title>
+<style>
+  :root{
+    --bleu:#1F4E79;--bleu2:#2E75B6;--bleu3:#D6E4F0;
+    --rouge:#C00000;--vert:#1E6B2E;--orange:#E67E22;--violet:#7D3C98;
+    --turquoise:#148F77;--gris:#F4F4F4;--gris2:#DDDDDD;--noir:#1A1A1A;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#ECEFF4;color:var(--noir);font-size:15px;}
+
+  .eleve-header{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:white;border-bottom:2px solid var(--gris2);padding:10px 20px;}
+  .eleve-header h2{font-size:14px;font-weight:700;color:var(--bleu);margin-right:6px;white-space:nowrap;}
+  .field{display:flex;align-items:center;gap:5px;font-size:13px;}
+  .field label{color:#555;white-space:nowrap;}
+  .field input{border:1px solid var(--gris2);border-radius:4px;padding:3px 7px;font-size:13px;width:130px;}
+  .field input.short{width:60px;}
+
+  header{background:var(--bleu);color:white;padding:12px 24px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(0,0,0,0.3);}
+  .header-badge{background:var(--rouge);color:white;font-weight:700;font-size:14px;padding:6px 12px;border-radius:6px;white-space:nowrap;}
+  .header-titles h1{font-size:17px;font-weight:700;line-height:1.2;}
+  .header-titles p{font-size:12px;opacity:0.75;margin-top:2px;}
+
+  .print-bar{display:flex;justify-content:flex-end;margin:10px 20px 4px;}
+  .btn-print{background:var(--bleu);color:white;border:none;border-radius:7px;padding:9px 20px;font-size:14px;font-weight:700;cursor:pointer;}
+  .btn-print:hover{background:var(--bleu2);}
+
+  .toolbox{margin:0 20px 14px;background:white;border:2px solid var(--bleu2);border-radius:10px;overflow:hidden;}
+  .toolbox-header{background:var(--bleu2);color:white;padding:10px 16px;font-weight:700;font-size:14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;}
+  .toolbox-header:hover{background:var(--bleu);}
+  .toolbox-body{padding:14px 16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;}
+  .toolbox-body.collapsed{display:none;}
+  .def-card{background:var(--gris);border-left:4px solid var(--bleu2);border-radius:6px;padding:10px 12px;}
+  .def-card h4{color:var(--bleu);font-size:13px;margin-bottom:6px;}
+  .def-card p{font-size:13px;line-height:1.6;}
+  .def-card .formula{background:white;border:1px solid var(--gris2);border-radius:4px;padding:6px 10px;margin-top:6px;font-size:13px;text-align:center;}
+  .vec{display:inline-block;position:relative;font-style:italic;font-family:'Times New Roman',serif;padding-top:7px;line-height:1;}
+  .vec::before{content:'→';position:absolute;top:-1px;left:50%;transform:translateX(-50%);font-size:0.72em;font-style:normal;line-height:1;}
+  .vec-btn{font-size:13px;padding-top:6px;}
+  .vec-btn::before{font-size:0.7em;top:-1px;}
+
+  .tabs-wrapper{margin:0 20px 20px;}
+  .tabs{display:flex;gap:4px;overflow-x:auto;padding-bottom:2px;}
+  .tab-btn{background:white;border:2px solid var(--gris2);border-bottom:none;border-radius:8px 8px 0 0;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;color:#666;white-space:nowrap;transition:all .2s;}
+  .tab-btn:hover{background:var(--bleu3);color:var(--bleu);}
+  .tab-btn.active{background:var(--bleu);color:white;border-color:var(--bleu);}
+  .tab-content{background:white;border:2px solid var(--gris2);border-radius:0 8px 8px 8px;padding:20px;display:none;}
+  .tab-content.active{display:block;}
+
+  .situation-header{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px;}
+  .situation-num{background:var(--rouge);color:white;font-weight:700;font-size:20px;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .situation-header h2{font-size:17px;color:var(--bleu);margin-bottom:4px;}
+  .situation-header p{font-size:13px;color:#555;line-height:1.5;}
+
+  .canvas-zone{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;}
+  canvas{border:2px solid var(--gris2);border-radius:8px;display:block;}
+
+  .controls{display:flex;flex-direction:column;gap:8px;min-width:190px;}
+  .ctrl-section{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
+  .toggle-group{display:flex;flex-direction:column;gap:5px;}
+  .toggle-btn{border:2px solid;border-radius:6px;padding:7px 10px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;background:white;display:flex;align-items:center;gap:5px;width:100%;}
+  .toggle-btn.force-P{border-color:#C00000;color:#C00000;}
+  .toggle-btn.force-P.active{background:#C00000;color:white;}
+  .toggle-btn.force-R{border-color:#1E6B2E;color:#1E6B2E;}
+  .toggle-btn.force-R.active{background:#1E6B2E;color:white;}
+  .toggle-btn.force-T{border-color:#7D3C98;color:#7D3C98;}
+  .toggle-btn.force-T.active{background:#7D3C98;color:white;}
+  .toggle-btn.force-F12{border-color:#E67E22;color:#E67E22;}
+  .toggle-btn.force-F12.active{background:#E67E22;color:white;}
+  .toggle-btn.force-F21{border-color:#148F77;color:#148F77;}
+  .toggle-btn.force-F21.active{background:#148F77;color:white;}
+
+  .info-box{background:var(--bleu3);border:1px solid var(--bleu2);border-radius:6px;padding:8px 10px;font-size:12px;margin-top:4px;}
+  .info-box strong{color:var(--bleu);display:block;margin-bottom:3px;}
+  .piege-box{background:#FFF8E1;border:2px solid #F0C040;border-radius:8px;padding:8px 12px;font-size:12px;margin-top:6px;line-height:1.5;}
+  .piege-box strong{color:#8B6000;}
+  .data-box{background:#F0FFF4;border:1px solid #A9DFBF;border-radius:6px;padding:8px 10px;font-size:12px;margin-top:4px;line-height:1.8;}
+  .data-box strong{color:#1E6B2E;display:block;margin-bottom:3px;}
+
+  .questions{margin-top:16px;border-top:2px solid var(--bleu3);padding-top:14px;}
+  .q-title{font-size:12px;font-weight:700;color:var(--bleu);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;}
+  .question{background:var(--gris);border-left:4px solid var(--bleu2);border-radius:0 6px 6px 0;padding:9px 12px;margin-bottom:8px;}
+  .question .code{display:inline-block;color:white;font-size:11px;font-weight:700;padding:2px 6px;border-radius:3px;margin-right:5px;}
+  .code-app{background:#1F4E79;} .code-rea{background:#1E6B2E;} .code-val{background:#7D3C98;}
+  .question p{font-size:13px;line-height:1.5;margin-bottom:6px;}
+  textarea{width:100%;border:1.5px solid var(--gris2);border-radius:4px;padding:6px 8px;font-size:13px;font-family:inherit;resize:vertical;min-height:52px;background:#FAFAFA;}
+  textarea:focus{outline:none;border-color:var(--bleu2);}
+
+  .carac-bar{display:flex;gap:14px;align-items:stretch;margin:6px 0;}
+  .carac-line{width:3px;background:var(--bleu2);border-radius:2px;flex-shrink:0;}
+  .carac-items{display:flex;flex-direction:column;gap:6px;flex:1;}
+  .carac-item{display:flex;align-items:center;gap:8px;font-size:13px;}
+  .carac-tiret{color:var(--bleu2);font-weight:700;flex-shrink:0;}
+  .carac-label{color:#444;min-width:155px;flex-shrink:0;}
+  .carac-input{flex:1;border:1.5px solid var(--gris2);border-radius:4px;padding:4px 8px;font-size:13px;font-family:inherit;background:#FAFAFA;}
+  .carac-input:focus{outline:none;border-color:var(--bleu2);}
+
+  .slider-zone{display:flex;flex-direction:column;gap:4px;margin-top:6px;}
+  .slider-zone label{font-size:12px;color:#555;}
+  .slider-zone input[type=range]{width:100%;cursor:pointer;}
+  .slider-val{font-size:12px;font-weight:700;color:var(--bleu);text-align:center;}
+
+  .nav-bottom{display:flex;justify-content:flex-end;margin-top:14px;gap:8px;}
+  .btn-nav{background:var(--bleu);color:white;border:none;border-radius:6px;padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer;}
+  .btn-nav:hover{background:var(--bleu2);}
+
+  @media print{
+    @page{margin:0.7cm;}
+    body{background:white;font-size:10pt;}
+    .btn,.btn-print,.print-bar,.tab-btn,.btn-nav,.controls,.toolbox{display:none!important;}
+    .tabs{display:none!important;}
+    canvas,.canvas-zone{display:none!important;}
+    .tab-content{display:block!important;border:1px solid #ccc;page-break-inside:unset;margin-bottom:10pt;padding:8px;}
+    .situation-header{margin-bottom:6px;}
+    .question{page-break-inside:avoid;padding:5px 8px;margin-bottom:5px;}
+    .q-title{margin-top:6px;margin-bottom:5px;}
+    textarea{border:1px solid #bbb;min-height:28pt;background:white;}
+    .carac-input{border:1px solid #bbb;background:white;}
+    .data-box{display:none!important;}
+    .piege-box{display:none!important;}
+    .info-box{display:none!important;}
+    .header-badge{background:#C00000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .eleve-header{margin:0 0 6px 0;padding:8px 12px;}
+    header{padding:8px 14px;}
+    .tabs-wrapper{margin:0;}
+  }
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+</head>
+<body>
+
+<div class="eleve-header">
+  <h2>AD — Forces et interaction - 3ème loi de Newton &nbsp;|&nbsp; 2<sup>nde</sup></h2>
+  <div class="field"><label>Nom :</label><input type="text" placeholder="………………………………"></div>
+  <div class="field"><label>Prénom :</label><input type="text" placeholder="………………………………"></div>
+  <div class="field"><label>Classe :</label><input type="text" placeholder="2nde …" class="short"></div>
+  <div class="field"><label>Date :</label><input type="text" placeholder="…/…/……" class="short"></div>
+  <div class="field"><label>Groupe :</label><input type="text" placeholder="……" class="short"></div>
+  <div class="field"><label>Note :</label><input type="text" placeholder="… / 20" class="short"></div>
+</div>
+
+<header>
+  <div class="header-badge">Activité documentaire</div>
+  <div class="header-titles">
+    <h1>🔭 PH5 - Modéliser une action sur un système</h1>
+  </div>
+</header>
+
+<div class="print-bar">
+  <button class="btn-print" onclick="window.print()">🖨️ Imprimer / Exporter PDF</button>
+</div>
+
+<div class="toolbox">
+  <div class="toolbox-header" onclick="toggleToolbox()">🧰 Boîte à outils — Notions essentielles <span id="toolbox-arrow">▼</span></div>
+  <div class="toolbox-body" id="toolbox-body">
+    <div class="def-card">
+      <h4>📌 Les 4 caractéristiques d'une force</h4>
+      <p><b>Point d'application</b> : où la force est appliquée.<br><b>Direction</b> : la droite le long de laquelle elle agit.<br><b>Sens</b> : l'un des deux sens sur cette droite.<br><b>Norme</b> : la valeur en newtons (N).</p><br>
+       <h4>📌 Actions de contact / à distance</h4>
+      <p><b>Contact :</b> réaction d'un support, tension d'un fil.<br><b>À distance :</b> Interaction gravitationnelle, magnétisme.</p>
+    </div>
+    <div class="def-card">
+      <h4>📌 Poids</h4>
+      <div class="formula">\( P = m \times g \)<br><small>\(g ≈ 9,8 ~\mathrm{N{\cdot}kg^{-1}}\) sur Terre <br> \(g ≈ 1,6 ~\mathrm{N{\cdot}kg^{-1}}\) sur la Lune</small></div>
+      <p style="font-size:12px;margin-top:5px;color:#444;line-height:1.7;text-align:center">\(P\) : poids (\(N\)) <br> \(m\) : masse (\(kg\)) <br> \(g\) : intensité de pesanteur (\(\mathrm{N{\cdot}kg^{-1}}\))</p>
+    </div>
+    <div class="def-card">
+      <h4>📌 Force d'interaction gravitationnelle</h4>
+      <div class="formula" style="margin-top:6px">\( F = \dfrac{G \times m_1 \times m_2}{d^2} \)<br><small>\( G = 6{,}67 \times 10^{-11}\ \mathrm{N{\cdot}m^2{\cdot}kg^{-2}} \)</small></div>
+      <p style="font-size:12px;margin-top:5px;color:#444;line-height:1.7;;text-align:center"> \(F\) : force d'interaction gravitationnelle (\(N\)) <br> \(G\) : constante de gravitation (\(\mathrm{N{\cdot}m^2{\cdot}kg^{-2}} \)) <br> \(m_1, m_2\) : masses (\(kg\)) <br> \(d\) : distance entre les centres de masse (\(m\))</p>
+    </div>
+    <div class="def-card">
+      <h4>📌 3ème loi de Newton ou Principe des actions réciproques</h4>
+      <p>Si A exerce une force \(\vec{F}_{A/B}\) sur B, alors B exerce une force \(\vec{F}_{B/A}\) sur A ayant :</p>
+      <div class="formula">• Même droite d'action (même direction)<br>• Sens opposés <br>• Même norme</div>
+    </div>
+  </div>
+</div>
+
+<div class="tabs-wrapper">
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab(0)">1 — Livre sur table</button>
+    <button class="tab-btn"        onclick="showTab(1)">2 — Balle suspendue</button>
+    <button class="tab-btn"        onclick="showTab(2)">3 — Terre &amp; Lune</button>
+    <button class="tab-btn"        onclick="showTab(3)">4 — Système solaire</button>
+    <button class="tab-btn"        onclick="showTab(4)">5 — Le poids</button>
+    <button class="tab-btn"        onclick="showTab(5)">6 — Patineurs</button>
+  </div>
+
+  <!-- ══ ONGLET 1 ══ -->
+  <div class="tab-content active" id="tab-0">
+    <div class="situation-header"><div class="situation-num">1</div><div>
+      <h2>Un livre posé sur une table</h2>
+      <p>Le livre est en équilibre. Active les forces pour les observer.</p>
+    </div></div>
+    <div class="canvas-zone">
+      <canvas id="c0" width="420" height="270"></canvas>
+      <div class="controls">
+        <div class="ctrl-section">Forces sur le livre</div>
+        <div class="toggle-group">
+          <button class="toggle-btn force-P" onclick="toggleForce(0,'P',this)">⬇ \(\vec{P}\) : Poids</button>
+          <button class="toggle-btn force-R" onclick="toggleForce(0,'R',this)">⬆ \(\vec{R}\) : Réaction du support</button>
+        </div>
+        <div class="info-box"><strong>Rappel</strong>Le livre est immobile : les forces se compensent.</div>
+      </div>
+    </div>
+    <div class="questions"><div class="q-title">📋 Questions</div>
+      <div class="question">
+        <p><span class="code code-app">APP</span><b>Q1.</b> Quelle est la nature de l'action de la Terre sur le livre ? Et celle de la table sur le livre ? (Contact ou à distance ?)</p>
+        <textarea placeholder="Réponse…"></textarea>
+      </div>
+      <div class="question">
+        <p><span class="code code-app">APP</span><b>Q2.</b> Active le poids \(\vec{P}\). Complète ses 4 caractéristiques (\(m = 400\ \text{g}\)) :</p>
+        <div class="carac-bar">
+          <div class="carac-line"></div>
+          <div class="carac-items">
+            <div class="carac-item"><span class="carac-tiret">—</span><span class="carac-label">Point d'application :</span><input class="carac-input" type="text" placeholder="……………………………………"></div>
+            <div class="carac-item"><span class="carac-tiret">—</span><span class="carac-label">Direction :</span><input class="carac-input" type="text" placeholder="……………………………………"></div>
+            <div class="carac-item"><span class="carac-tiret">—</span><span class="carac-label">Sens :</span><input class="carac-input" type="text" placeholder="……………………………………"></div>
+            <div class="carac-item"><span class="carac-tiret">—</span><span class="carac-label">Norme : \( P = m \times g = \)</span><input class="carac-input" type="text" placeholder="…………… N"></div>
+          </div>
+        </div>
+      </div>
+      <div class="question">
+        <p><span class="code code-rea">REA</span><b>Q3.</b> Active la réaction \(\vec{R}\). Compare-la au poids : direction, sens, norme. Que remarques-tu ?</p>
+        <textarea placeholder="Réponse…"></textarea>
+      </div>
+      <div class="question">
+        <p><span class="code code-val">VAL</span><b>Q4.</b> Le livre est immobile. Que vaut la somme des forces ? Justifie.</p>
+        <textarea placeholder="Réponse…"></textarea>
+      </div>
+    </div>
+    <div class="nav-bottom"><button class="btn-nav" onclick="showTab(1)">Situation suivante →</button></div>
+  </div>
+
+  <!-- ══ ONGLET 2 ══ -->
+  <div class="tab-content" id="tab-1">
+    <div class="situation-header"><div class="situation-num">2</div><div>
+      <h2>Une balle suspendue à un fil</h2>
+      <p>La balle de tennis (\(58\ \text{g}\)) est attachée à un fil fixé au plafond. Elle est en équilibre.</p>
+    </div></div>
+    <div class="canvas-zone">
+      <canvas id="c1" width="420" height="290"></canvas>
+      <div class="controls">
+        <div class="ctrl-section">Forces sur la balle</div>
+        <div class="toggle-group">
+          <button class="toggle-btn force-P" onclick="toggleForce(1,'P',this)">⬇ \(\vec{P}\) : Poids</button>
+          <button class="toggle-btn force-T" onclick="toggleForce(1,'T',this)">⬆ \(\vec{T}\) : Tension du fil</button>
+        </div>
+        <div class="piege-box"><strong>⚠️ Cas piège !</strong><br>La force du fil n'est PAS une réaction de support. Comment s'appelle-t-elle ?</div>
+      </div>
+    </div>
+    <div class="questions"><div class="q-title">📋 Questions</div>
+      <div class="question">
+        <p><span class="code code-app">APP</span><b>Q1.</b> Combien de forces s'exercent sur la balle ? Les lister avec leur corps émetteur.</p>
+        <textarea placeholder="Réponse…"></textarea>
+      </div>
+      <div class="question">
+        <p><span class="code code-rea">REA</span><b>Q2.</b> Calcule la valeur du poids de la balle (\(m = 58\ \text{g}\)). En déduire la valeur de la tension \(T\).</p>
+        <textarea placeholder="Calculs…" style="min-height:70px"></textarea>
+      </div>
+      <div class="question">
+        <p><span class="code code-val">VAL</span><b>Q3.</b> Compare cette situation au livre sur la table (sit. 1). Qu'ont-elles en commun ? Qu'est-ce qui diffère ?</p>
+        <textarea placeholder="Réponse…"></textarea>
+      </div>
+    </div>
+    <div class="nav-bottom">
+      <button class="btn-nav" onclick="showTab(0)">← Précédente</button>
+      <button class="btn-nav" onclick="showTab(2)">Situation suivante →</button>
+    </div>
+  </div>
+
+  <!-- ══ ONGLET 3 ══ -->
+  <div class="tab-content" id="tab-2">
+    <div class="situation-header"><div class="situation-num">3</div><div>
+      <h2>Interaction gravitationnelle — Système Terre–Lune</h2>
+      <p>La Terre et la Lune s'attirent mutuellement. Fais varier la distance pour observer l'évolution des forces.</p>
+    </div></div>
+    <div class="canvas-zone">
+      <canvas id="c2" width="560" height="230"></canvas>
+      <div class="controls">
+        <div class="ctrl-section">Forces gravitationnelles</div>
+        <div class="toggle-group">
+          <button class="toggle-btn force-F12" onclick="toggleForce(2,'F12',this)">← \(\vec{F}_{T/L}\) : Force de la Terre sur la Lune</button>
+          <button class="toggle-btn force-F21" onclick="toggleForce(2,'F21',this)">→ \(\vec{F}_{L/T}\) : Force de la Lune sur la Terre</button>
+        </div>
+        <div class="slider-zone">
+          <label>Distance : <b><span id="dist-label">384 000 km</span></b></label>
+          <input type="range" min="0.4" max="3" value="1" step="0.05" oninput="updateDist(this.value)">
+          <div class="slider-val">F = <span id="force-val">—</span></div>
+        </div>
+        <div class="data-box">
+          <strong>📊 Données</strong>
+          \( M_\text{Terre} = 5{,}97 \times 10^{24}\ \text{kg} \)<br>
+          \( M_\text{Lune} = 7{,}34 \times 10^{22}\ \text{kg} \)<br>
+          \( d_0 = 3{,}84 \times 10^{8}\ \text{m} \) <br> \( G = 6{,}67 \times 10^{-11}\ \mathrm{N{\cdot}m^2{\cdot}kg^{-2}} \)
+        </div>
+        <div class="piege-box"><strong>⚠️ À observer !</strong><br>La Terre est 81× plus massive. Les forces sont-elles égales ?</div>
+      </div>
+    </div>
+    <div class="questions"><div class="q-title">📋 Questions</div>
+      <div class="question">
+        <p><span class="code code-app">APP</span><b>Q1.</b> Active \(\vec{F}_{T/L}\). Sur quel corps cette force s'exerce-t-elle ? Dans quel sens ? Quelle est la nature de cette interaction ?</p>
+        <textarea placeholder="Réponse…"></textarea>
+      </div>
+      <div class="question">
+        <p><span class="code code-rea">REA</span><b>Q2.</b> Calcule la valeur de la force d'interaction gravitationnelle Terre–Lune pour \(d = d_0\). Vérifie avec l'animation.</p>
+        <textarea placeholder="Calculs…" style="min-height:70px"></textarea>
+      </div>
+      <div class="question">
+        <p><span class="code code-app">APP</span><b>Q3.</b> Active \(\vec{F}_{L/T}\). Donne ses 4 caractéristiques. Que remarques-tu par rapport à \(\vec{F}_{T/L}\) ?</p>
+        <textarea placeholder="Réponse…"></textarea>
+      </div>
+      <div class="question">
+        <p><span class="code code-rea">REA</span><b>Q4.</b> Fais varier la distance avec le curseur. Comment évolue la force quand la distance augmente ? Quand elle diminue ?</p>
+        <textarea placeholder="Réponse…"></textarea>
+      </div>
+      <div class="question">
+        <p><span class="code code-val">VAL</span><b>Q5.</b> La Lune est 81× moins massive que la Terre. Pourtant les deux forces ont-elles la même norme ? Quel principe cela illustre-t-il ?</p>
+        <textarea placeholder="Réponse…"></textarea>
+      </div>
+    </div>
+    <div class="nav-bottom">
+      <button class="btn-nav" onclick="showTab(1)">← Précédente</button>
+      <button class="btn-nav" onclick="showTab(3)">Situation suivante →</button>
+    </div>
+  </div>
+
+  <!-- ══ ONGLET 4 ══ -->
+  <div class="tab-content" id="tab-3">
+    <div class="situation-header"><div class="situation-num">4</div><div>
+      <h2>Soleil et planètes du système solaire</h2>
+      <p>Sélectionne une planète et observe les forces d'interactions gravitationnelles Soleil ↔ Planète.</p>
+    </div></div>
+    <div class="canvas-zone">
+      <canvas id="c3" width="560" height="290"></canvas>
+      <div class="controls">
+        <div class="ctrl-section">Planète</div>
+        <select id="planet-select" onchange="selectPlanet(this.value)" style="width:100%;padding:6px;border-radius:6px;border:2px solid var(--bleu2);font-size:13px;font-weight:600;color:var(--bleu);">
+          <option value="mercure">Mercure</option>
+          <option value="venus">Vénus</option>
+          <option value="terre" selected>Terre</option>
+          <option value="mars">Mars</option>
+          <option value="jupiter">Jupiter</option>
+          <option value="saturne">Saturne</option>
+        </select>
+        <div class="ctrl-section" style="margin-top:8px">Forces</div>
+        <div class="toggle-group">
+          <button class="toggle-btn force-F12" onclick="toggleForce(3,'F12',this)">← \(\vec{F}_{\text{Soleil/Planète}}\)</button>
+          <button class="toggle-btn force-F21" onclick="toggleForce(3,'F21',this)">→ \(\vec{F}_{\text{Planète/Soleil}}\)</button>
+        </div>
+        <div class="data-box" id="planet-databox">
+          <strong>📊 Données — Terre</strong>
+          <div id="planet-data">M<sub>p</sub> = 5,97×10²⁴ kg<br>d = 1,50×10¹¹ m<br>F = 3,56×10²² N</div>
+        </div>
+        <div class="piege-box"><strong>⚠️ Piège !</strong><br>Jupiter est 318 fois plus massive que la Terre. L'interaction graviationnelle avec le Soleil est-elle 318 fois plus grande ?</div>
+      </div>
+    </div>
+    <div class="questions"><div class="q-title">📋 Questions</div>
+      <div class="question">
+        <p><span class="code code-app">APP</span><b>Q1.</b> Sélectionne Mercure puis Jupiter. Que remarques-tu sur la taille des flèches ? Pourquoi ?</p>
+        <textarea placeholder="Réponse…"></textarea>
+      </div>
+      <div class="question">
+        <p><span class="code code-rea">REA</span><b>Q2.</b> Pour la Terre, active les deux forces. Compare direction, sens et norme.</p>
+        <textarea placeholder="Réponse…"></textarea>
+      </div>
+      <div class="question">
+        <p><span class="code code-val">VAL</span><b>Q3.</b> Pour Jupiter, la force est-elle plus grande que pour la Terre ? Donne deux raisons.</p>
+        <textarea placeholder="Réponse…"></textarea>
+      </div>
+      <div class="question">
+        <p><span class="code code-val">VAL</span><b>Q4.</b> Les deux forces ont toujours même direction, même norme mais des sens opposés quelle que soit la planète. Quel principe cela confirme-t-il ?</p>
+        <textarea placeholder="Réponse…"></textarea>
+      </div>
+    </div>
+    <div class="nav-bottom">
+      <button class="btn-nav" onclick="showTab(2)">← Précédente</button>
+      <button class="btn-nav" onclick="showTab(4)">Situation suivante →</button>
+    </div>
+  </div>
+
+  <!-- ══ ONGLET 5 — POIDS ══ -->
+  <div class="tab-content" id="tab-4">
+    <div class="situation-header"><div class="situation-num">5</div><div>
+      <h2>Le poids — un cas particulier de force d'interaction gravitationnelle</h2>
+      <p>Un objet posé à la surface d'un astre. Choisis l'astre et observe comment le poids varie.</p>
+    </div></div>
+    <div class="canvas-zone">
+      <canvas id="c4" width="420" height="290"></canvas>
+      <div class="controls">
+        <div class="ctrl-section">Astre</div>
+        <select id="astre-select" onchange="selectAstre(this.value)" style="width:100%;padding:6px;border-radius:6px;border:2px solid var(--bleu2);font-size:13px;font-weight:600;color:var(--bleu);">
+          <option value="terre" selected>Terre (g = 9,8 N·kg⁻¹)</option>
+          <option value="lune">Lune (g = 1,6 N·kg⁻¹)</option>
+          <option value="mars">Mars (g = 3,7 N·kg⁻¹)</option>
+          <option value="jupiter">Jupiter (g = 24,8 N·kg⁻¹)</option>
+        </select>
+        <div class="ctrl-section" style="margin-top:8px">Forces</div>
+        <div class="toggle-group">
+          <button class="toggle-btn force-P" onclick="toggleForce(4,'P',this)">⬇ \(\vec{P}\) : Poids</button>
+          <button class="toggle-btn force-F12" onclick="toggleForce(4,'Fg',this)">⬇ \(\vec{F}_g\) : Force d'interaction gravitationnelle</button>
+        </div>
+        <div class="data-box" id="astre-databox">
+          <strong>📊 Données — Terre</strong>
+          <div id="astre-data">\(g = 9{,}8\ \mathrm{N{\cdot}kg^{-1}}\)<br>\(m = 65\ \text{kg}\)<br>\(F_g = \mathbf{637{,}0\ \text{N}}\)</div>
+        </div>
+        <div class="data-box" style="margin-top:4px">
+          <strong>📊 Pour les calculs</strong>
+          \( M_\text{Terre} = 5{,}97 \times 10^{24}\ \text{kg} \)<br>
+          \( R_T = 6{,}37 \times 10^{6}\ \text{m} \)<br>
+          \( G = 6{,}67 \times 10^{-11}\ \mathrm{N{\cdot}m^2{\cdot}kg^{-2}} \)
+        </div>
+      </div>
+    </div>
+    <div class="questions"><div class="q-title">📋 Questions</div>
+      <div class="question">
+        <p><span class="code code-app">APP</span><b>Q1a.</b> La force d'interaction gravitationnelle exercée par la Terre sur l'objet est-elle une action de contact ou une action à distance ? Justifie.</p>
+        <textarea placeholder="Réponse…"></textarea>
+      </div>
+      <div class="question">
+        <p><span class="code code-app">APP</span><b>Q1b.</b> Active \(\vec{F}_g\). Entre quels deux corps s'exerce cette force ? Dans quel sens est-elle dirigée ?</p>
+        <textarea placeholder="Réponse…"></textarea>
+      </div>
+      <div class="question">
+        <p><span class="code code-rea">REA</span><b>Q1c.</b> Écris l'expression de la valeur de l'interaction gravitationnelle \(F_g\) entre la Terre (masse \(M\)) et un objet (masse \(m\)) posé à sa surface. Quelle grandeur faut-il utiliser comme distance \(d\) ?</p>
+        <textarea placeholder="Expression…"></textarea>
+      </div>
+      <div class="question">
+        <p><span class="code code-rea">REA</span><b>Q1d.</b> Lorsqu'un objet est posé à la surface d'une planète, la force l'interaction gravitationnelle est égale au poids : \(F_g = P\). En utilisant \(P = m \times g\), montre que \(g = \dfrac{G \times M}{d^2}\).</p>
+        <textarea placeholder="Démonstration…" style="min-height:70px"></textarea>
+      </div>
+      <div class="question">
+        <p><span class="code code-rea">REA</span><b>Q2a.</b> Remplace les valeurs numériques dans l'expression \(g = \dfrac{G \times M}{d^2}\) et calcule le résultat. (Utilise les données du panneau.)</p>
+        <textarea placeholder="Calculs…" style="min-height:70px"></textarea>
+      </div>
+      <div class="question">
+        <p><span class="code code-val">VAL</span><b>Q2b.</b> Compare ta valeur calculée à la valeur usuelle \(g = 9{,}8\ \mathrm{N{\cdot}kg^{-1}}\). Que constates-tu ?</p>
+        <textarea placeholder="Réponse…"></textarea>
+      </div>
+      <div class="question">
+        <p><span class="code code-rea">REA</span><b>Q3.</b> Sélectionne successivement la Terre et la Lune. Calcule le poids d'un élève de \(65\ \text{kg}\) sur chaque astre. Compare les deux résultats.</p>
+        <textarea placeholder="Calculs…" style="min-height:70px"></textarea>
+      </div>
+      <div class="question">
+        <p><span class="code code-val">VAL</span><b>Q4.</b> La masse d'un objet change-t-elle selon l'astre sur lequel il se trouve ? Et son poids ? Justifie.</p>
+        <textarea placeholder="Réponse…"></textarea>
+      </div>
+    </div>
+    <div class="nav-bottom">
+      <button class="btn-nav" onclick="showTab(3)">← Précédente</button>
+      <button class="btn-nav" onclick="showTab(5)">Situation suivante →</button>
+    </div>
+  </div>
+
+  <!-- ══ ONGLET 6 — PATINEURS ══ -->
+  <div class="tab-content" id="tab-5">
+    <div class="situation-header"><div class="situation-num">6</div><div>
+      <h2>Deux patineurs qui se poussent</h2>
+      <p>Le patineur A pousse le patineur B. Observe les forces sur <b>les deux</b> patineurs simultanément.</p>
+    </div></div>
+    <div class="canvas-zone">
+      <canvas id="c5" width="560" height="270"></canvas>
+      <div class="controls">
+        <div class="ctrl-section">Forces de contact</div>
+        <div class="toggle-group">
+          <button class="toggle-btn force-F12" onclick="toggleForce(5,'F12',this)">→ \(\vec{F}_{A/B}\) : Force de A sur B</button>
+          <button class="toggle-btn force-F21" onclick="toggleForce(5,'F21',this)">← \(\vec{F}_{B/A}\) : Force de B sur A</button>
+        </div>
+        <div class="slider-zone">
+          <label>Intensité de la poussée</label>
+          <input type="range" min="1" max="5" value="3" step="0.5" oninput="updatePush(this.value)">
+          <div class="slider-val">F = <span id="push-val">300 N</span></div>
+        </div>
+        <div class="info-box"><strong>Rappel notation</strong>\(\vec{F}_{A/B}\) = force exercée <b>par A sur B</b>.<br>\(\vec{F}_{B/A}\) = force exercée <b>par B sur A</b>.</div>
+      </div>
+    </div>
+    <div class="questions"><div class="q-title">📋 Questions</div>
+      <div class="question">
+        <p><span class="code code-app">APP</span><b>Q1.</b> Active \(\vec{F}_{A/B}\) puis \(\vec{F}_{B/A}\). Sont-elles de même direction ? De même sens ? De même norme ?</p>
+        <textarea placeholder="Réponse…"></textarea>
+      </div>
+      <div class="question">
+        <p><span class="code code-rea">REA</span><b>Q2.</b> Fais varier l'intensité de la poussée. Que remarques-tu sur les deux flèches simultanément ?</p>
+        <textarea placeholder="Réponse…"></textarea>
+      </div>
+      <div class="question">
+        <p><span class="code code-val">VAL</span><b>Q3.</b> L'adulte (\(60\ \text{kg}\)) pousse l'enfant (\(30\ \text{kg}\)). La force subie par l'enfant est-elle plus grande, égale ou plus petite que celle subie par l'adulte ? Justifie.</p>
+        <textarea placeholder="Réponse…"></textarea>
+      </div>
+      <div class="question">
+        <p><span class="code code-val">VAL</span><b>Q4.</b> Après la poussée, que va-t-il se passer pour chacun des deux patineurs ? Dans quel sens vont-ils partir ? Penses-tu qu'ils se déplaceront de la même façon ? Justifie.</p>
+        <textarea placeholder="Réponse…" style="min-height:70px"></textarea>
+      </div>
+      <div class="question">
+        <p><span class="code code-val">VAL</span><b>Q5.</b> Énonce la 3ème loi de Newton en tes propres mots, à partir de ce que tu as observé dans les situations 3, 4 et 6.</p>
+        <textarea placeholder="Réponse…"></textarea>
+      </div>
+    </div>
+    <div class="nav-bottom"><button class="btn-nav" onclick="showTab(4)">← Précédente</button></div>
+  </div>
+</div>
+
+<script>
+const G=6.67e-11, M_SOLEIL=1.989e30;
+const MT=5.97e24, ML=7.34e22, D0_TL=3.84e8;
+let distMult=1.0, pushLevel=3, currentPlanet='terre', currentAstre='terre';
+
+const ASTRES={
+  terre:  {name:'Terre',  g:9.8,  color:'#4A90D9',bgTop:'#87CEEB',bgBot:'#8B6914'},
+  lune:   {name:'Lune',   g:1.6,  color:'#AAAAAA',bgTop:'#1A1A2E',bgBot:'#555'},
+  mars:   {name:'Mars',   g:3.7,  color:'#C1440E',bgTop:'#8B4513',bgBot:'#6B2E0A'},
+  jupiter:{name:'Jupiter',g:24.8, color:'#C8A97E',bgTop:'#8B7355',bgBot:'#5C4A2A'},
+};
+const PLANETS={
+  mercure:{name:'Mercure',mass:3.30e23,dist:5.79e10,color:'#A0A0A0',r:5},
+  venus:  {name:'Vénus',  mass:4.87e24,dist:1.08e11,color:'#E8C97A',r:8},
+  terre:  {name:'Terre',  mass:5.97e24,dist:1.50e11,color:'#4A90D9',r:8},
+  mars:   {name:'Mars',   mass:6.42e23,dist:2.28e11,color:'#C1440E',r:6},
+  jupiter:{name:'Jupiter',mass:1.898e27,dist:7.78e11,color:'#C8A97E',r:15},
+  saturne:{name:'Saturne',mass:5.68e26,dist:1.43e12,color:'#E6D191',r:13},
+};
+const FORCE_STATE=[
+  {P:false,R:false},
+  {P:false,T:false},
+  {F12:false,F21:false},
+  {F12:false,F21:false},
+  {P:false,Fg:false},
+  {F12:false,F21:false},
+];
+
+function drawArrow(ctx,x1,y1,x2,y2,color,lw=2.2){
+  const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);
+  if(len<6)return;
+  const ux=dx/len,uy=dy/len,hLen=Math.min(13,len*0.4);
+  ctx.save();ctx.strokeStyle=color;ctx.lineWidth=lw;
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+  ctx.fillStyle=color;
+  ctx.beginPath();ctx.moveTo(x2,y2);
+  ctx.lineTo(x2-hLen*(ux-0.4*uy),y2-hLen*(uy+0.4*ux));
+  ctx.lineTo(x2-hLen*(ux+0.4*uy),y2-hLen*(uy-0.4*ux));
+  ctx.closePath();ctx.fill();ctx.restore();
+}
+function toSup(n){
+  const s={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+  return String(n).split('').map(c=>s[c]||c).join('');
+}
+function formatSci(v){
+  if(!v)return '—';
+  const exp=Math.floor(Math.log10(Math.abs(v)));
+  return `${(v/Math.pow(10,exp)).toFixed(2)} × 10${toSup(exp)} N`;
+}
+function drawLabel(ctx,txt,sub,x,y,color){
+  ctx.save();
+  ctx.font='italic bold 13px Times New Roman';
+  const w=ctx.measureText(txt).width;
+  const sw=sub?(ctx.font='10px Times New Roman',ctx.measureText(sub).width):0;
+  ctx.font='italic bold 13px Times New Roman';
+  ctx.fillStyle='rgba(255,255,255,0.82)';
+  ctx.fillRect(x-2,y-15,w+sw+6,20);
+  ctx.fillStyle=color;ctx.fillText(txt,x,y);
+  if(sub){ctx.font='10px Times New Roman';ctx.fillText(sub,x+w,y+3);}
+  const cx2=x+w/2,fy=y-14,hw=Math.max(w*0.5,6);
+  ctx.lineWidth=1.2;ctx.strokeStyle=color;
+  ctx.beginPath();ctx.moveTo(cx2-hw/2,fy);ctx.lineTo(cx2+hw/2,fy);ctx.stroke();
+  ctx.fillStyle=color;
+  ctx.beginPath();ctx.moveTo(cx2+hw/2,fy);ctx.lineTo(cx2+hw/2-4,fy-2.5);ctx.lineTo(cx2+hw/2-4,fy+2.5);ctx.closePath();ctx.fill();
+  ctx.restore();
+}
+
+// ── S0 Livre ──
+function drawS0(){
+  const ctx=document.getElementById('c0').getContext('2d');
+  ctx.clearRect(0,0,420,270);
+  ctx.fillStyle='#EFF3FA';ctx.fillRect(0,0,420,270);
+  ctx.fillStyle='#A0782A';ctx.fillRect(60,185,300,16);
+  ctx.fillStyle='#8B6914';ctx.fillRect(60,183,300,6);
+  ctx.fillStyle='#7A5C10';ctx.fillRect(80,201,14,60);ctx.fillRect(326,201,14,60);
+  const bx=155,by=145,bw=110,bh=40;
+  ctx.fillStyle='#2E75B6';ctx.fillRect(bx,by,bw,bh);
+  ctx.fillStyle='#1F4E79';ctx.fillRect(bx,by,bw,5);
+  ctx.fillStyle='white';ctx.font='bold 10px Segoe UI';ctx.textAlign='center';
+  ctx.fillText('Physique-Chimie',bx+bw/2,by+26);ctx.textAlign='left';
+  ctx.fillStyle='#333';ctx.font='12px Segoe UI';ctx.fillText('Livre (m = 400 g)',bx,by-8);
+  const cx=bx+bw/2,cy=by+bh/2;
+  ctx.beginPath();ctx.arc(cx,cy,4,0,2*Math.PI);ctx.fillStyle='#333';ctx.fill();
+  ctx.fillStyle='#CCC';ctx.fillRect(0,265,420,5);
+  const st=FORCE_STATE[0];
+  if(st.P){drawArrow(ctx,cx,cy,cx,cy+72,'#C00000');drawLabel(ctx,'P','',cx+6,cy+62,'#C00000');}
+  if(st.R){drawArrow(ctx,cx,by+bh,cx,by+bh-72,'#1E6B2E');drawLabel(ctx,'R','',cx+6,by+bh-60,'#1E6B2E');}
+}
+
+// ── S1 Balle ──
+function drawS1(){
+  const ctx=document.getElementById('c1').getContext('2d');
+  ctx.clearRect(0,0,420,290);
+  ctx.fillStyle='#EFF3FA';ctx.fillRect(0,0,420,290);
+  ctx.fillStyle='#888';ctx.fillRect(0,0,420,16);
+  for(let i=0;i<420;i+=20){ctx.fillStyle='#AAA';ctx.fillRect(i,16,10,7);}
+  ctx.strokeStyle='#555';ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.moveTo(210,23);ctx.lineTo(210,155);ctx.stroke();
+  ctx.beginPath();ctx.arc(210,23,4,0,2*Math.PI);ctx.fillStyle='#444';ctx.fill();
+  const bx=210,by=173;
+  const gr=ctx.createRadialGradient(bx-6,by-6,3,bx,by,18);
+  gr.addColorStop(0,'#FFEE88');gr.addColorStop(1,'#C8A000');
+  ctx.beginPath();ctx.arc(bx,by,18,0,2*Math.PI);ctx.fillStyle=gr;ctx.fill();
+  ctx.strokeStyle='#888';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.beginPath();ctx.arc(bx,by,4,0,2*Math.PI);ctx.fillStyle='#333';ctx.fill();
+  ctx.fillStyle='#333';ctx.font='12px Segoe UI';ctx.textAlign='center';
+  ctx.fillText('Balle de tennis (m = 58 g)',bx,by+34);ctx.textAlign='left';
+  const st=FORCE_STATE[1];
+  if(st.P){drawArrow(ctx,bx,by,bx,by+68,'#C00000');drawLabel(ctx,'P','',bx+6,by+58,'#C00000');}
+  if(st.T){
+    // Point d'application : contact fil/boule = sommet de la balle (by - 18)
+    const appT = by - 18;
+    drawArrow(ctx,bx,appT,bx,appT-68,'#7D3C98');
+    drawLabel(ctx,'T','',bx+6,appT-55,'#7D3C98');
+    // Petit point matérialisant le point d'application
+    ctx.beginPath();ctx.arc(bx,appT,3,0,2*Math.PI);ctx.fillStyle='#7D3C98';ctx.fill();
+  }
+}
+
+// ── S2 Terre-Lune ──
+function calcF_TL(m){return G*MT*ML/Math.pow(D0_TL*m,2);}
+function drawS2(){
+  const ctx=document.getElementById('c2').getContext('2d');
+  ctx.clearRect(0,0,560,230);
+  ctx.fillStyle='#080818';ctx.fillRect(0,0,560,230);
+  [[30,20],[90,50],[155,28],[220,18],[310,42],[385,22],[455,58],[525,16],[50,195],[125,172],[255,208],[405,185],[505,218]].forEach(([x,y])=>{
+    ctx.fillStyle='white';ctx.beginPath();ctx.arc(x,y,1,0,2*Math.PI);ctx.fill();
+  });
+  const Tx=120,Ty=115,Lx=420,Ly=115;
+  const gT=ctx.createRadialGradient(Tx-14,Ty-14,5,Tx,Ty,38);
+  gT.addColorStop(0,'#5DADE2');gT.addColorStop(0.6,'#2E86C1');gT.addColorStop(1,'#1A5276');
+  ctx.beginPath();ctx.arc(Tx,Ty,38,0,2*Math.PI);ctx.fillStyle=gT;ctx.fill();
+  ctx.fillStyle='#27AE60';
+  ctx.beginPath();ctx.ellipse(Tx-8,Ty-8,14,18,0.3,0,2*Math.PI);ctx.fill();
+  ctx.beginPath();ctx.ellipse(Tx+10,Ty+5,10,14,-0.2,0,2*Math.PI);ctx.fill();
+  ctx.fillStyle='white';ctx.font='bold 12px Segoe UI';ctx.textAlign='center';
+  ctx.fillText('Terre',Tx,Ty+52);ctx.textAlign='left';
+  const gL=ctx.createRadialGradient(Lx-7,Ly-7,3,Lx,Ly,20);
+  gL.addColorStop(0,'#D5D5D5');gL.addColorStop(1,'#888');
+  ctx.beginPath();ctx.arc(Lx,Ly,20,0,2*Math.PI);ctx.fillStyle=gL;ctx.fill();
+  ctx.fillStyle='rgba(0,0,0,0.25)';
+  ctx.beginPath();ctx.arc(Lx-4,Ly-2,4,0,2*Math.PI);ctx.fill();
+  ctx.beginPath();ctx.arc(Lx+5,Ly+5,3,0,2*Math.PI);ctx.fill();
+  ctx.fillStyle='white';ctx.font='bold 12px Segoe UI';ctx.textAlign='center';
+  ctx.fillText('Lune',Lx,Ly+34);ctx.textAlign='left';
+  const d=D0_TL*distMult;
+  ctx.fillStyle='#AAA';ctx.font='11px Segoe UI';ctx.textAlign='center';
+  ctx.fillText(`d = ${(d/1e6).toFixed(0)} × 10³ km`,280,Ty+72);ctx.textAlign='left';
+  document.getElementById('dist-label').textContent=`${Math.round(d/1e3).toLocaleString('fr-FR')} km`;
+  const F=calcF_TL(distMult);
+  document.getElementById('force-val').textContent=formatSci(F);
+  const F0=calcF_TL(1.0),maxLen=80;
+  const arrowLen=Math.max(10,Math.min(maxLen,maxLen*(F/F0)));
+  const st=FORCE_STATE[2];
+  if(st.F12){drawArrow(ctx,Lx,Ly,Lx-arrowLen,Ly,'#E67E22',2.5);drawLabel(ctx,'F','T/L',Lx-arrowLen-48,Ly-10,'#E67E22');}
+  if(st.F21){drawArrow(ctx,Tx,Ly,Tx+arrowLen,Ly,'#148F77',2.5);drawLabel(ctx,'F','L/T',Tx+arrowLen+4,Ly-10,'#148F77');}
+}
+
+// ── S3 Solaire ──
+function calcF_Soleil(p){const pl=PLANETS[p];return G*M_SOLEIL*pl.mass/Math.pow(pl.dist,2);}
+function updatePlanetData(planet){
+  const p=PLANETS[planet],F=calcF_Soleil(planet);
+  const fe=Math.floor(Math.log10(F)),fm=(F/Math.pow(10,fe)).toFixed(2);
+  const me=Math.floor(Math.log10(p.mass)),mm=(p.mass/Math.pow(10,me)).toFixed(2);
+  const de=Math.floor(Math.log10(p.dist)),dm=(p.dist/Math.pow(10,de)).toFixed(2);
+  document.querySelector('#planet-databox strong').textContent=`📊 Données — ${p.name}`;
+  document.getElementById('planet-data').innerHTML=`\\(M_p = ${mm}\\times 10^{${me}}\\ \\text{kg}\\) <br> \\(d = ${dm}\\times 10^{${de}}\\ \\text{m}\\)<br>\\(F = ${fm}\\times 10^{${fe}}\\ \\text{N}\\)`;
+  if(window.renderMathInElement) renderMathInElement(document.getElementById('planet-data'),{delimiters:[{left:'\\(',right:'\\)',display:false}]});
+}
+function drawS3(){
+  const ctx=document.getElementById('c3').getContext('2d');
+  ctx.clearRect(0,0,560,290);
+  ctx.fillStyle='#060614';ctx.fillRect(0,0,560,290);
+  [[20,25],[65,80],[105,15],[178,62],[245,30],[318,72],[388,22],[468,52],[535,82],[42,252],[118,202],[208,272],[295,245],[375,280],[488,212]].forEach(([x,y])=>{
+    ctx.fillStyle='white';ctx.beginPath();ctx.arc(x,y,1,0,2*Math.PI);ctx.fill();
+  });
+  const sx=75,sy=145;
+  const gsun=ctx.createRadialGradient(sx,sy,5,sx,sy,42);
+  gsun.addColorStop(0,'#FFF5A0');gsun.addColorStop(0.5,'#FFD700');gsun.addColorStop(1,'#FF8C00');
+  ctx.beginPath();ctx.arc(sx,sy,42,0,2*Math.PI);ctx.fillStyle=gsun;ctx.fill();
+  ctx.beginPath();ctx.arc(sx,sy,50,0,2*Math.PI);
+  ctx.strokeStyle='rgba(255,200,0,0.15)';ctx.lineWidth=10;ctx.stroke();
+  ctx.fillStyle='white';ctx.font='bold 11px Segoe UI';ctx.textAlign='center';
+  ctx.fillText('Soleil',sx,sy+57);ctx.textAlign='left';
+  const p=PLANETS[currentPlanet];
+  const dMin=PLANETS.mercure.dist,dMax=PLANETS.saturne.dist;
+  const t=(Math.log(p.dist)-Math.log(dMin))/(Math.log(dMax)-Math.log(dMin));
+  const px=135+t*(490-135),py=sy;
+  ctx.strokeStyle='rgba(255,255,255,0.07)';ctx.lineWidth=1;ctx.setLineDash([3,5]);
+  ctx.beginPath();ctx.arc(sx,sy,px-sx,0,2*Math.PI);ctx.stroke();ctx.setLineDash([]);
+  const gp=ctx.createRadialGradient(px-p.r*0.4,py-p.r*0.4,1,px,py,p.r);
+  gp.addColorStop(0,'white');gp.addColorStop(1,p.color);
+  ctx.beginPath();ctx.arc(px,py,p.r,0,2*Math.PI);ctx.fillStyle=gp;ctx.fill();
+  if(currentPlanet==='saturne'){
+    ctx.save();ctx.translate(px,py);ctx.scale(1,0.28);
+    ctx.strokeStyle='rgba(200,180,80,0.55)';ctx.lineWidth=5;
+    ctx.beginPath();ctx.arc(0,0,p.r+9,0,2*Math.PI);ctx.stroke();ctx.restore();
+  }
+  ctx.fillStyle='white';ctx.font='bold 11px Segoe UI';ctx.textAlign='center';
+  ctx.fillText(p.name,px,py+p.r+16);ctx.textAlign='left';
+  const F=calcF_Soleil(currentPlanet),FT=calcF_Soleil('terre');
+  const arrowLen=Math.max(20,Math.min(80,40*Math.log(F/FT+1)/Math.log(2)+25));
+  const st=FORCE_STATE[3];
+  if(st.F12){drawArrow(ctx,px,py,px-arrowLen,py,'#E67E22',2.5);drawLabel(ctx,'F','S/P',px-arrowLen-46,py-10,'#E67E22');}
+  if(st.F21){drawArrow(ctx,sx,py,sx+arrowLen,py,'#148F77',2.5);drawLabel(ctx,'F','P/S',sx+arrowLen+4,py-10,'#148F77');}
+}
+
+// ── S4 Poids ──
+function updateAstreData(astre){
+  const a=ASTRES[astre];
+  const P=(65*a.g).toFixed(1);
+  document.querySelector('#astre-databox strong').textContent=`📊 Données — ${a.name}`;
+  document.getElementById('astre-data').innerHTML=`\\(g = ${a.g}\\ \\mathrm{N{\\cdot}kg^{-1}}\\) <br> \\(m = 65\\ \\text{kg}\\)<br>\\(F_g = \\textbf{${P}\\ \\text{N}}\\)`;
+  if(window.renderMathInElement) renderMathInElement(document.getElementById('astre-data'),{delimiters:[{left:'\\(',right:'\\)',display:false}]});
+}
+
+function drawS4(){
+  const ctx=document.getElementById('c4').getContext('2d');
+  ctx.clearRect(0,0,420,290);
+  const a=ASTRES[currentAstre];
+
+  // ── Ciel ──
+  ctx.fillStyle=a.bgTop; ctx.fillRect(0,0,420,290);
+
+  // ── Disque planète (cercle centré en bas, visible comme un arc) ──
+  const planetR=200;
+  const planetCx=210, planetCy=290; // centre au bas du canvas
+  const surfaceY = planetCy - planetR; // y = 90 — surface de la planète
+  ctx.beginPath();
+  ctx.arc(planetCx,planetCy,planetR,Math.PI,2*Math.PI);
+  ctx.fillStyle=a.bgBot; ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=2; ctx.stroke();
+
+  // ── Flèche R_T : du centre du disque jusqu'à la surface ──
+  // Centre du disque : (planetCx, planetCy) = (210, 290)
+  // Surface : y = 290 - 200 = 90
+  // On trace du centre (210, 290) vers la surface (210, 90)
+  ctx.save();
+  ctx.strokeStyle='rgba(255,255,255,0.7)'; ctx.lineWidth=1.8;
+  ctx.setLineDash([6,4]);
+  ctx.beginPath(); ctx.moveTo(planetCx, planetCy); ctx.lineTo(planetCx, surfaceY+2); ctx.stroke();
+  ctx.setLineDash([]);
+  // pointe de flèche vers la surface
+  ctx.fillStyle='rgba(255,255,255,0.8)';
+  ctx.beginPath();
+  ctx.moveTo(planetCx, surfaceY);
+  ctx.lineTo(planetCx-5, surfaceY+10);
+  ctx.lineTo(planetCx+5, surfaceY+10);
+  ctx.closePath(); ctx.fill();
+  // accolade latérale + label R_T
+  const bracketX = planetCx+12;
+  ctx.strokeStyle='rgba(255,255,255,0.55)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(bracketX, surfaceY+2); ctx.lineTo(bracketX, planetCy-2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(bracketX-3, surfaceY+2); ctx.lineTo(bracketX+3, surfaceY+2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(bracketX-3, planetCy-2); ctx.lineTo(bracketX+3, planetCy-2); ctx.stroke();
+  // label R_T
+  const midY = (surfaceY + planetCy) / 2;
+  ctx.fillStyle='rgba(255,255,255,0.85)';
+  ctx.font='italic bold 13px Times New Roman'; ctx.textAlign='left';
+  ctx.fillText('R', bracketX+6, midY+2);
+  ctx.font='10px Times New Roman';
+  ctx.fillText('T', bracketX+18, midY+5);
+  ctx.restore();
+
+  // Nom de l'astre sur la planète
+  ctx.fillStyle='rgba(255,255,255,0.65)'; ctx.font='bold 12px Segoe UI'; ctx.textAlign='center';
+  ctx.fillText(a.name, planetCx, 278); ctx.textAlign='left';
+
+  // ── Objet (petit cube) posé à la surface ──
+  const ow=36, oh=30;
+  const ox=planetCx-ow/2, oy=surfaceY-oh;
+  ctx.fillStyle='#E74C3C'; ctx.fillRect(ox,oy,ow,oh);
+  ctx.fillStyle='#C0392B'; ctx.fillRect(ox,oy,ow,4);
+  ctx.fillStyle='rgba(255,255,255,0.25)'; ctx.fillRect(ox+3,oy+6,ow-8,oh-16);
+  ctx.fillStyle='#222'; ctx.font='10px Segoe UI'; ctx.textAlign='center';
+  ctx.fillText('m',planetCx,oy+oh+13); ctx.textAlign='left';
+
+  // Centre de masse de l'objet
+  const cx=planetCx, cy=oy+oh/2;
+  ctx.beginPath(); ctx.arc(cx,cy,3,0,2*Math.PI);
+  ctx.fillStyle='#333'; ctx.fill();
+
+  // ── Forces ──
+  const gRef=9.8, arrowLen=Math.max(18,Math.min(90,65*(a.g/gRef)));
+  const st=FORCE_STATE[4];
+
+  // Poids P (orange) — vers le bas depuis centre objet
+  if(st.P){
+    drawArrow(ctx,cx,cy,cx,cy+arrowLen,'#C00000',2.5);
+    drawLabel(ctx,'P','',cx+5,cy+arrowLen-6,'#C00000');
+    ctx.fillStyle='#C00000'; ctx.font='bold 10px Segoe UI';
+    ctx.fillText(`${(65*a.g).toFixed(1)} N`,cx+18,cy+arrowLen*0.55);
+  }
+
+  // Fg (violet) — vers le bas depuis centre objet (vers centre planète)
+  if(st.Fg){
+    const fgLen=arrowLen;
+    drawArrow(ctx,cx,cy,cx,cy+fgLen,'#7D3C98',2.5);
+    drawLabel(ctx,'F','g',cx-28,cy+fgLen-6,'#7D3C98');
+    ctx.fillStyle='#7D3C98'; ctx.font='bold 10px Segoe UI';
+    ctx.fillText(`${(65*a.g).toFixed(1)} N`,cx-50,cy+fgLen*0.55);
+  }
+}
+
+// ── S5 Patineurs ──
+function drawSkaterFigure(ctx,x,y,facing,color,scale){
+  ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);
+  const fx=facing==='right'?1:-1;
+  // corps
+  ctx.fillStyle=color;ctx.fillRect(-13,-50,26,34);
+  // tête
+  const gh=ctx.createRadialGradient(-2,-66,4,0,-62,13);
+  gh.addColorStop(0,'#FADADD');gh.addColorStop(1,'#E8B8A0');
+  ctx.beginPath();ctx.arc(0,-62,13,0,2*Math.PI);ctx.fillStyle=gh;ctx.fill();
+  // bras intérieur (tendu)
+  ctx.strokeStyle=color;ctx.lineWidth=4;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(13*fx,-38);ctx.lineTo(28*fx,-28);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(28*fx,-28);ctx.lineTo(40*fx,-35);ctx.stroke();
+  // bras extérieur
+  ctx.beginPath();ctx.moveTo(-13*fx,-38);ctx.lineTo(-24*fx,-30);ctx.stroke();
+  // jambes
+  ctx.fillStyle='#334';
+  ctx.fillRect(-11,-16,9,30);ctx.fillRect(2,-16,9,30);
+  // patins
+  ctx.fillStyle='#999';
+  ctx.fillRect(-13,14,12,7);ctx.fillRect(1,14,12,7);
+  ctx.restore();
+}
+
+function drawS5(){
+  const ctx=document.getElementById('c5').getContext('2d');
+  ctx.clearRect(0,0,560,270);
+  ctx.fillStyle='#E8F4FB';ctx.fillRect(0,0,560,270);
+  const gi=ctx.createLinearGradient(0,178,0,270);
+  gi.addColorStop(0,'#C5E8F7');gi.addColorStop(1,'#A8D5EE');
+  ctx.fillStyle=gi;ctx.fillRect(0,178,560,92);
+  ctx.strokeStyle='rgba(255,255,255,0.6)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(0,196);ctx.lineTo(560,196);ctx.stroke();
+
+  // ── Calcul des positions pour mains jointives ──
+  // Dans drawSkaterFigure, le bras intérieur aboutit à (40*fx, -35) avant scale
+  // Pour A (facing right, scale 1)  : main à Ax + 40*1 = Ax+40
+  // Pour B (facing left,  scale 0.75): main à Bx - 40*0.75 = Bx-30, en y : By + (-35)*0.75 = By-26.25
+  // On veut que les deux mains aient la même hauteur et se touchent au même x
+  // → on fixe la hauteur main de A : Ay + (-35) = Ay-35
+  // → on veut By - 26.25 = Ay - 35  → By = Ay - 35 + 26.25 = Ay - 8.75 ≈ Ay - 9
+  // Point de contact cx : Ax+40 = Bx-30 → Bx = Ax+70
+  // On choisit cx=278 → Ax=238, Bx=308, Ay=170, By=161
+
+  const cx=278, cy=135; // point de contact des mains
+  const Ax=238, Ay=170;
+  const Bx=308, By=161; // By = Ay - 9 pour aligner les mains en hauteur
+
+  // Patineur A
+  drawSkaterFigure(ctx,Ax,Ay,'right','#C0392B',1);
+  ctx.fillStyle='#222';ctx.font='bold 13px Segoe UI';ctx.textAlign='center';
+  ctx.fillText('Patineur A',Ax,Ay+44);
+  ctx.font='11px Segoe UI';ctx.fillStyle='#666';ctx.fillText('(60 kg, adulte)',Ax,Ay+57);
+
+  // Patineur B (enfant, scale 0.75)
+  drawSkaterFigure(ctx,Bx,By,'left','#2980B9',0.75);
+  ctx.fillStyle='#222';ctx.font='bold 12px Segoe UI';ctx.textAlign='center';
+  ctx.fillText('Patineur B',Bx,By+36);
+  ctx.font='10px Segoe UI';ctx.fillStyle='#666';ctx.fillText('(30 kg, enfant)',Bx,By+48);
+  ctx.textAlign='left';
+
+  // Point de contact visible
+  ctx.beginPath();ctx.arc(cx,cy,5,0,2*Math.PI);
+  ctx.fillStyle='rgba(60,60,60,0.5)';ctx.fill();
+
+  // F label au-dessus
+  const Fval=Math.round(pushLevel*100);
+  ctx.fillStyle='#444';ctx.font='bold 12px Segoe UI';ctx.textAlign='center';
+  ctx.fillText(`F = ${Fval} N`,cx,cy-16);ctx.textAlign='left';
+
+  const arrowLen=pushLevel*18;
+  const st=FORCE_STATE[5];
+  if(st.F12){
+    drawArrow(ctx,cx,cy,cx+arrowLen,cy,'#E67E22',2.5);
+    drawLabel(ctx,'F','A/B',cx+arrowLen+4,cy-8,'#E67E22');
+  }
+  if(st.F21){
+    drawArrow(ctx,cx,cy,cx-arrowLen,cy,'#148F77',2.5);
+    drawLabel(ctx,'F','B/A',cx-arrowLen-46,cy-8,'#148F77');
+  }
+}
+
+// ── CONTRÔLES ──
+const DRAW_FNS=[drawS0,drawS1,drawS2,drawS3,drawS4,drawS5];
+function toggleForce(i,f,btn){
+  FORCE_STATE[i][f]=!FORCE_STATE[i][f];
+  btn.classList.toggle('active',FORCE_STATE[i][f]);
+  DRAW_FNS[i]();
+}
+function updateDist(v){distMult=parseFloat(v);drawS2();}
+function selectPlanet(p){currentPlanet=p;updatePlanetData(p);drawS3();}
+function selectAstre(a){currentAstre=a;updateAstreData(a);drawS4();}
+function updatePush(v){
+  pushLevel=parseFloat(v);
+  document.getElementById('push-val').textContent=`${Math.round(pushLevel*100)} N`;
+  drawS5();
+}
+function showTab(idx){
+  document.querySelectorAll('.tab-content').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',i===idx));
+  DRAW_FNS[idx]();
+}
+let toolboxOpen=true;
+function toggleToolbox(){
+  toolboxOpen=!toolboxOpen;
+  document.getElementById('toolbox-body').classList.toggle('collapsed',!toolboxOpen);
+  document.getElementById('toolbox-arrow').textContent=toolboxOpen?'▼':'▶';
+}
+window.onload=()=>{
+  // Rendu LaTeX sur tout le document
+  if(window.renderMathInElement){
+    renderMathInElement(document.body,{
+      delimiters:[
+        {left:'\\(',right:'\\)',display:false},
+        {left:'\\[',right:'\\]',display:true}
+      ],
+      throwOnError:false
+    });
+  }
+  updatePlanetData('terre');
+  updateAstreData('terre');
+  DRAW_FNS.forEach(fn=>fn());
+};
+</script>
+</body>
+</html>
