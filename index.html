@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2GT — PH5 — AD — Modéliser une action sur un système</title>
+<title>2GT - PH5 - AD - Modéliser une action sur un système</title>
 <style>
   :root{
     --bleu:#1F4E79;--bleu2:#2E75B6;--bleu3:#D6E4F0;
@@ -136,7 +136,7 @@
 <body>
 
 <div class="eleve-header">
-  <h2>PH5 — AD — Forces et interaction - 3ème loi de Newton &nbsp;|&nbsp; 2<sup>nde</sup></h2>
+  <h2>PH5 - AD - Forces et interaction - 3ème loi de Newton &nbsp;|&nbsp; 2<sup>nde</sup></h2>
   <div class="field"><label>Nom :</label><input type="text" placeholder="………………………………"></div>
   <div class="field"><label>Prénom :</label><input type="text" placeholder="………………………………"></div>
   <div class="field"><label>Classe :</label><input type="text" placeholder="2nde …" class="short"></div>
@@ -148,7 +148,7 @@
 <header>
   <div class="header-badge">AD</div>
   <div class="header-titles">
-    <h1>🔭 PH5 — Modéliser une action sur un système</h1>
+    <h1>🔭 PH5 - Modéliser une action sur un système</h1>
   </div>
 </header>
 
@@ -157,7 +157,7 @@
 </div>
 
 <div class="toolbox">
-  <div class="toolbox-header" onclick="toggleToolbox()">🧰 Boîte à outils — Notions essentielles <span id="toolbox-arrow">▼</span></div>
+  <div class="toolbox-header" onclick="toggleToolbox()">🧰 Boîte à outils - Notions essentielles <span id="toolbox-arrow">▼</span></div>
   <div class="toolbox-body" id="toolbox-body">
     <div class="def-card">
       <h4>📌 Les 4 caractéristiques d'une force</h4>
@@ -185,12 +185,12 @@
 
 <div class="tabs-wrapper">
   <div class="tabs">
-    <button class="tab-btn active" onclick="showTab(0)">1 — Livre sur table</button>
-    <button class="tab-btn"        onclick="showTab(1)">2 — Balle suspendue</button>
-    <button class="tab-btn"        onclick="showTab(2)">3 — Terre &amp; Lune</button>
-    <button class="tab-btn"        onclick="showTab(3)">4 — Système solaire</button>
-    <button class="tab-btn"        onclick="showTab(4)">5 — Le poids</button>
-    <button class="tab-btn"        onclick="showTab(5)">6 — Patineurs</button>
+    <button class="tab-btn active" onclick="showTab(0)">1 - Livre sur table</button>
+    <button class="tab-btn"        onclick="showTab(1)">2 - Balle suspendue</button>
+    <button class="tab-btn"        onclick="showTab(2)">3 - Terre &amp; Lune</button>
+    <button class="tab-btn"        onclick="showTab(3)">4 - Système solaire</button>
+    <button class="tab-btn"        onclick="showTab(4)">5 - Le poids</button>
+    <button class="tab-btn"        onclick="showTab(5)">6 - Patineurs</button>
   </div>
 
   <!-- ══ ONGLET 1 ══ -->
@@ -220,10 +220,10 @@
         <div class="carac-bar">
           <div class="carac-line"></div>
           <div class="carac-items">
-            <div class="carac-item"><span class="carac-tiret">—</span><span class="carac-label">Point d'application :</span><input class="carac-input" type="text" placeholder="……………………………………"></div>
-            <div class="carac-item"><span class="carac-tiret">—</span><span class="carac-label">Direction :</span><input class="carac-input" type="text" placeholder="……………………………………"></div>
-            <div class="carac-item"><span class="carac-tiret">—</span><span class="carac-label">Sens :</span><input class="carac-input" type="text" placeholder="……………………………………"></div>
-            <div class="carac-item"><span class="carac-tiret">—</span><span class="carac-label">Norme : \( P = m \times g = \)</span><input class="carac-input" type="text" placeholder="…………… N"></div>
+            <div class="carac-item"><span class="carac-tiret">-</span><span class="carac-label">Point d'application :</span><input class="carac-input" type="text" placeholder="……………………………………"></div>
+            <div class="carac-item"><span class="carac-tiret">-</span><span class="carac-label">Direction :</span><input class="carac-input" type="text" placeholder="……………………………………"></div>
+            <div class="carac-item"><span class="carac-tiret">-</span><span class="carac-label">Sens :</span><input class="carac-input" type="text" placeholder="……………………………………"></div>
+            <div class="carac-item"><span class="carac-tiret">-</span><span class="carac-label">Norme : \( P = m \times g = \)</span><input class="carac-input" type="text" placeholder="…………… N"></div>
           </div>
         </div>
       </div>
@@ -279,7 +279,7 @@
   <!-- ══ ONGLET 3 ══ -->
   <div class="tab-content" id="tab-2">
     <div class="situation-header"><div class="situation-num">3</div><div>
-      <h2>Interaction gravitationnelle — Système Terre–Lune</h2>
+      <h2>Interaction gravitationnelle - Système Terre–Lune</h2>
       <p>La Terre et la Lune s'attirent mutuellement. Fais varier la distance pour observer l'évolution des forces.</p>
     </div></div>
     <div class="canvas-zone">
@@ -293,7 +293,7 @@
         <div class="slider-zone">
           <label>Distance : <b><span id="dist-label">384 000 km</span></b></label>
           <input type="range" min="0.4" max="3" value="1" step="0.05" oninput="updateDist(this.value)">
-          <div class="slider-val">F = <span id="force-val">—</span></div>
+          <div class="slider-val">F = <span id="force-val">-</span></div>
         </div>
         <div class="data-box">
           <strong>📊 Données</strong>
@@ -356,7 +356,7 @@
           <button class="toggle-btn force-F21" onclick="toggleForce(3,'F21',this)">→ \(\vec{F}_{\text{Planète/Soleil}}\)</button>
         </div>
         <div class="data-box" id="planet-databox">
-          <strong>📊 Données — Terre</strong>
+          <strong>📊 Données - Terre</strong>
           <div id="planet-data">M<sub>p</sub> = 5,97×10²⁴ kg<br>d = 1,50×10¹¹ m<br>F = 3,56×10²² N</div>
         </div>
         <div class="piege-box"><strong>⚠️ Piège !</strong><br>Jupiter est 318 fois plus massive que la Terre. L'interaction graviationnelle avec le Soleil est-elle 318 fois plus grande ?</div>
@@ -386,10 +386,10 @@
     </div>
   </div>
 
-  <!-- ══ ONGLET 5 — POIDS ══ -->
+  <!-- ══ ONGLET 5 - POIDS ══ -->
   <div class="tab-content" id="tab-4">
     <div class="situation-header"><div class="situation-num">5</div><div>
-      <h2>Le poids — un cas particulier de force d'interaction gravitationnelle</h2>
+      <h2>Le poids - un cas particulier de force d'interaction gravitationnelle</h2>
       <p>Un objet posé à la surface d'un astre. Choisis l'astre et observe comment le poids varie.</p>
     </div></div>
     <div class="canvas-zone">
@@ -408,7 +408,7 @@
           <button class="toggle-btn force-F12" onclick="toggleForce(4,'Fg',this)">⬇ \(\vec{F}_g\) : Force d'interaction gravitationnelle</button>
         </div>
         <div class="data-box" id="astre-databox">
-          <strong>📊 Données — Terre</strong>
+          <strong>📊 Données - Terre</strong>
           <div id="astre-data">\(g = 9{,}8\ \mathrm{N{\cdot}kg^{-1}}\)<br>\(m = 65\ \text{kg}\)<br>\(F_g = \mathbf{637{,}0\ \text{N}}\)</div>
         </div>
         <div class="data-box" style="margin-top:4px">
@@ -459,7 +459,7 @@
     </div>
   </div>
 
-  <!-- ══ ONGLET 6 — PATINEURS ══ -->
+  <!-- ══ ONGLET 6 - PATINEURS ══ -->
   <div class="tab-content" id="tab-5">
     <div class="situation-header"><div class="situation-num">6</div><div>
       <h2>Deux patineurs qui se poussent</h2>
@@ -552,7 +552,7 @@ function toSup(n){
   return String(n).split('').map(c=>s[c]||c).join('');
 }
 function formatSci(v){
-  if(!v)return '—';
+  if(!v)return '-';
   const exp=Math.floor(Math.log10(Math.abs(v)));
   return `${(v/Math.pow(10,exp)).toFixed(2)} × 10${toSup(exp)} N`;
 }
@@ -672,7 +672,7 @@ function updatePlanetData(planet){
   const fe=Math.floor(Math.log10(F)),fm=(F/Math.pow(10,fe)).toFixed(2);
   const me=Math.floor(Math.log10(p.mass)),mm=(p.mass/Math.pow(10,me)).toFixed(2);
   const de=Math.floor(Math.log10(p.dist)),dm=(p.dist/Math.pow(10,de)).toFixed(2);
-  document.querySelector('#planet-databox strong').textContent=`📊 Données — ${p.name}`;
+  document.querySelector('#planet-databox strong').textContent=`📊 Données - ${p.name}`;
   document.getElementById('planet-data').innerHTML=`\\(M_p = ${mm}\\times 10^{${me}}\\ \\text{kg}\\) <br> \\(d = ${dm}\\times 10^{${de}}\\ \\text{m}\\)<br>\\(F = ${fm}\\times 10^{${fe}}\\ \\text{N}\\)`;
   if(window.renderMathInElement) renderMathInElement(document.getElementById('planet-data'),{delimiters:[{left:'\\(',right:'\\)',display:false}]});
 }
@@ -718,7 +718,7 @@ function drawS3(){
 function updateAstreData(astre){
   const a=ASTRES[astre];
   const P=(65*a.g).toFixed(1);
-  document.querySelector('#astre-databox strong').textContent=`📊 Données — ${a.name}`;
+  document.querySelector('#astre-databox strong').textContent=`📊 Données - ${a.name}`;
   document.getElementById('astre-data').innerHTML=`\\(g = ${a.g}\\ \\mathrm{N{\\cdot}kg^{-1}}\\) <br> \\(m = 65\\ \\text{kg}\\)<br>\\(F_g = \\textbf{${P}\\ \\text{N}}\\)`;
   if(window.renderMathInElement) renderMathInElement(document.getElementById('astre-data'),{delimiters:[{left:'\\(',right:'\\)',display:false}]});
 }
@@ -734,7 +734,7 @@ function drawS4(){
   // ── Disque planète (cercle centré en bas, visible comme un arc) ──
   const planetR=200;
   const planetCx=210, planetCy=290; // centre au bas du canvas
-  const surfaceY = planetCy - planetR; // y = 90 — surface de la planète
+  const surfaceY = planetCy - planetR; // y = 90 - surface de la planète
   ctx.beginPath();
   ctx.arc(planetCx,planetCy,planetR,Math.PI,2*Math.PI);
   ctx.fillStyle=a.bgBot; ctx.fill();
@@ -793,7 +793,7 @@ function drawS4(){
   const gRef=9.8, arrowLen=Math.max(18,Math.min(90,65*(a.g/gRef)));
   const st=FORCE_STATE[4];
 
-  // Poids P (orange) — vers le bas depuis centre objet
+  // Poids P (orange) - vers le bas depuis centre objet
   if(st.P){
     drawArrow(ctx,cx,cy,cx,cy+arrowLen,'#C00000',2.5);
     drawLabel(ctx,'P','',cx+5,cy+arrowLen-6,'#C00000');
@@ -801,7 +801,7 @@ function drawS4(){
     ctx.fillText(`${(65*a.g).toFixed(1)} N`,cx+18,cy+arrowLen*0.55);
   }
 
-  // Fg (violet) — vers le bas depuis centre objet (vers centre planète)
+  // Fg (violet) - vers le bas depuis centre objet (vers centre planète)
   if(st.Fg){
     const fgLen=arrowLen;
     drawArrow(ctx,cx,cy,cx,cy+fgLen,'#7D3C98',2.5);
